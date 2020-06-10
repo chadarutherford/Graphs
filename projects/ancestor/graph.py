@@ -196,70 +196,50 @@ class Graph:
         # if we get here, there was no path so return None 
         return None
 
-if __name__ == '__main__':
-    graph = Graph()  # Instantiate your graph
-    # https://github.com/LambdaSchool/Graphs/blob/master/objectives/breadth-first-search/img/bfs-visit-order.png
-    graph.add_vertex(1)
-    graph.add_vertex(2)
-    graph.add_vertex(3)
-    graph.add_vertex(4)
-    graph.add_vertex(5)
-    graph.add_vertex(6)
-    graph.add_vertex(7)
-    graph.add_edge(5, 3)
-    graph.add_edge(6, 3)
-    graph.add_edge(7, 1)
-    graph.add_edge(4, 7)
-    graph.add_edge(1, 2)
-    graph.add_edge(7, 6)
-    graph.add_edge(2, 4)
-    graph.add_edge(3, 5)
-    graph.add_edge(2, 3)
-    graph.add_edge(4, 6)
 
-    '''
-    Should print:
-        {1: {2}, 2: {3, 4}, 3: {5}, 4: {6, 7}, 5: {3}, 6: {3}, 7: {1, 6}}
-    '''
-    print(graph.vertices)
+    # different version of a DFS, to return the longest path (eg. the earliest ancestor)
+    def find_earliest_ancestor(self, start):
+        # create a stack
+        s = Stack()
 
-    '''
-    Valid BFT paths:
-        1, 2, 3, 4, 5, 6, 7
-        1, 2, 3, 4, 5, 7, 6
-        1, 2, 3, 4, 6, 7, 5
-        1, 2, 3, 4, 6, 5, 7
-        1, 2, 3, 4, 7, 6, 5
-        1, 2, 3, 4, 7, 5, 6
-        1, 2, 4, 3, 5, 6, 7
-        1, 2, 4, 3, 5, 7, 6
-        1, 2, 4, 3, 6, 7, 5
-        1, 2, 4, 3, 6, 5, 7
-        1, 2, 4, 3, 7, 6, 5
-        1, 2, 4, 3, 7, 5, 6
-    '''
-    graph.bft(1)
+        # push the starting vertex to the stack
+        # create a visited set to keep track of the visited nodes
+        # create a path to hold the longest path
+        s.push([start])
+        visited = set()
+        path = [start]
 
-    '''
-    Valid DFT paths:
-        1, 2, 3, 5, 4, 6, 7
-        1, 2, 3, 5, 4, 7, 6
-        1, 2, 4, 7, 6, 3, 5
-        1, 2, 4, 6, 3, 5, 7
-    '''
-    graph.dft(1)
-    graph.dft_recursive(1)
+        # while the stack still holds items
+        while s.size() > 0:
+            # create an inner path by popping a value from the stack
+            # grab the vertex from the last index of the list
+            inner_path = s.pop()
+            vert = inner_path[-1]
 
-    '''
-    Valid BFS path:
-        [1, 2, 4, 6]
-    '''
-    print(graph.bfs(1, 6))
+            # if the vertex hasn't been visited,
+            # add it to the set
+            if vert not in visited:
+                visited.add(vert)
 
-    '''
-    Valid DFS paths:
-        [1, 2, 4, 6]
-        [1, 2, 4, 7, 6]
-    '''
-    print(graph.dfs(1, 6))
-    print(graph.dfs_recursive(1, 6))
+                # loop through all remaining neighbors
+                # create a copy of the inner path
+                # append the vertex to the copy
+                # push the path copy to the stack for all neighbors
+                for next_vert in self.get_neighbors(vert):
+                    path_copy = list(inner_path)
+                    path_copy.append(next_vert)
+
+                    s.push(path_copy)
+
+                    # if the path copy and the "longest path" contain the same number of values
+                    # set the longest path equal to the path copy
+                    if len(path_copy) > len(path):
+                        path = path_copy
+
+                    # if the paths lengths are equal, and the last elements of the lists are different,
+                    # set the longest path equal to the path copy
+                    if len(path_copy) == len(path) and path_copy[-1] != path[-1]:
+                        path = path_copy
+
+        # return the resulting path
+        return path
